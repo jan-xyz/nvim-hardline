@@ -1,6 +1,6 @@
 # nvim-hardline
 
-A statusline / bufferline for Neovim written in Lua. It is inspired by
+A statusline for Neovim written in Lua. It is inspired by
 [vim-airline](https://github.com/vim-airline/vim-airline) but aims to
 be as light and simple as possible.
 
@@ -36,19 +36,15 @@ You can pass options to the `setup()` function. Here are all available options
 with their default settings:
 ```lua
 require('hardline').setup {
-  bufferline = false,  -- enable bufferline
-  bufferline_settings = {
-    exclude_terminal = false,  -- don't show terminal buffers in bufferline
-    show_index = false,        -- show buffer indexes (not the actual buffer numbers) in bufferline
-  },
   theme = 'default',   -- change theme
   sections = {         -- define sections
     {class = 'mode', item = require('hardline.parts.mode').get_item},
-    {class = 'high', item = require('hardline.parts.git').get_item, hide = 100},
+    {class = 'high', item = require('hardline.parts.git').get_item, hide = 120},
     {class = 'med', item = require('hardline.parts.filename').get_item},
     '%<',
     {class = 'med', item = '%='},
-    {class = 'low', item = require('hardline.parts.wordcount').get_item, hide = 100},
+    {class = 'low', item = require('hardline.parts.treesitter-context').get_item, hide = 100},
+    {class = 'low', item = require('hardline.parts.wordcount').get_item, hide = 120},
     {class = 'error', item = require('hardline.parts.lsp').get_error},
     {class = 'warning', item = require('hardline.parts.lsp').get_warning},
     {class = 'warning', item = require('hardline.parts.whitespace').get_item},
@@ -64,7 +60,6 @@ that list is a table with the following attributes:
   available:
   * `mode`: change color based on the current mode.
   * `low`, `med`, `high`: colors for different levels of importance.
-  * `bufferline`: colors for the bufferline.
   * `error`, `warning`: colors for the diagnostics of Neovim built-in LSP
     client.
 * `item`: the actual text being displayed. Must be a string or a function

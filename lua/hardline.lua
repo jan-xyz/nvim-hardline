@@ -7,39 +7,19 @@ local fn, cmd, vim = vim.fn, vim.cmd, vim
 local g, o, wo = vim.g, vim.o, vim.wo
 local fmt = string.format
 local common = require('hardline.common')
-local bufferline = require('hardline.bufferline')
-local custom_colors = require('hardline.themes.custom_colors')
 local M = {}
 
 -------------------- OPTIONS -------------------------------
 M.options = {
-  bufferline = false,
-  bufferline_settings = {
-      exclude_terminal = false,
-      show_index = false,
-      separator = '|',
-  },
   theme = 'default',
-  custom_theme = {
-    text = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    normal = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    insert = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    replace = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    inactive_comment = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    inactive_cursor = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    inactive_menu = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    visual = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    command = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    alt_text = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-    warning = {gui = "NONE", cterm = "NONE", cterm16 = "NONE"},
-  },
   sections = {
     {class = 'mode', item = require('hardline.parts.mode').get_item},
-    {class = 'high', item = require('hardline.parts.git').get_item, hide = 100},
+    {class = 'high', item = require('hardline.parts.git').get_item, hide = 120},
     {class = 'med', item = require('hardline.parts.filename').get_item},
     '%<',
     {class = 'med', item = '%='},
-    {class = 'low', item = require('hardline.parts.wordcount').get_item, hide = 100},
+    {class = 'low', item = require('hardline.parts.treesitter-context').get_item, hide = 100},
+    {class = 'low', item = require('hardline.parts.wordcount').get_item, hide = 120},
     {class = 'error', item = require('hardline.parts.lsp').get_error},
     {class = 'warning', item = require('hardline.parts.lsp').get_warning},
     {class = 'warning', item = require('hardline.parts.whitespace').get_item},
@@ -130,16 +110,6 @@ local function get_section_state(section)
       return mode.state
     end
   end
-  if section.class == 'bufferline' then
-    if section.separator then
-      return 'separator'
-    end
-    local state = section.current and 'current' or 'background'
-    if section.modified then
-      state = fmt('%s_modified', state)
-    end
-    return state
-  end
   return common.is_active() and 'active' or 'inactive'
 end
 
@@ -177,31 +147,13 @@ function M.update_statusline()
   return table.concat(highlight_sections(sections))
 end
 
--------------------- BUFFERLINE ----------------------------
-function M.update_bufferline()
-  local sections = {}
-  local settings = M.options.bufferline_settings
-  local buffers = bufferline.get_buffers(settings)
-  for i, buffer in ipairs(buffers) do
-    table.insert(sections, bufferline.to_section(buffer, i, settings))
-    if i < #buffers then
-      table.insert(sections, M.options.bufferline_settings.separator)
-    end
-  end
-  return table.concat(highlight_sections(sections))
-end
-
 -------------------- SETUP -----------------------------
 local function set_theme()
   if type(M.options.theme) ~= 'string' then
     return
   end
-  if M.options.theme == 'custom' then
-    M.options.theme = custom_colors.set(M.options.custom_theme)
-  else
-    local theme = fmt('hardline.themes.%s', M.options.theme)
-    M.options.theme = require(theme)
-  end
+  local theme = fmt('hardline.themes.%s', M.options.theme)
+  M.options.theme = require(theme)
 end
 
 local function set_hlgroups()
@@ -224,11 +176,6 @@ local function set_statusline()
   wo.statusline = o.statusline
 end
 
-local function set_bufferline()
-  o.showtabline = 2
-  o.tabline = [[%!luaeval('require("hardline").update_bufferline()')]]
-end
-
 function M.setup(user_options)
   if user_options then
     M.options = vim.tbl_extend('force', M.options, user_options)
@@ -236,9 +183,6 @@ function M.setup(user_options)
   set_theme()
   set_hlgroups()
   set_statusline()
-  if M.options.bufferline then
-    set_bufferline()
-  end
 end
 
 ------------------------------------------------------------

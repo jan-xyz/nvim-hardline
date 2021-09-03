@@ -18,15 +18,8 @@ local function get_column()
   return fmt('%s%d/%s%d', pad(col, 100), col, pad(nbcol, 100), nbcol)
 end
 
-local function get_percent()
-  local nb_lines = fn.line('$')
-  local line = fn.line('.')
-  local percent = math.floor(line * 100 / nb_lines)
-  return fmt('%s%d%%%%', pad(percent, 100), percent)
-end
-
 local function get_item()
-  return table.concat({get_line(), get_column(), get_percent()}, ' ')
+  return table.concat({get_line(), get_column()}, ' ')
 end
 
 return {

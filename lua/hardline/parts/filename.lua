@@ -2,7 +2,7 @@ local fn = vim.fn
 local bo = vim.bo
 
 local function get_name()
-  return fn.expand('%:~:.')
+  return fn.expand('%:t')
 end
 
 local function get_readonly()
